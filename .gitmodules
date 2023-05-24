@@ -1,0 +1,6 @@
+[submodule "free5gc"]
+	path = free5gc
+	url = git@github.com:LENSS/free5gc.git
+[submodule "open5gs"]
+	path = open5gs
+	url = git@github.com:LENSS/open5gs.git
