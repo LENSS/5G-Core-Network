@@ -7,7 +7,11 @@ SHELL := /bin/bash
 # Set the default target to init
 .DEFAULT_GOAL := init
 
-OPEN5GS_REQS_UBUNTU_INSTALL := $(shell sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson)
+# Get OS
+OS := $(shell grep  -oP '^ID=\K\w+' /etc/os-release)
+
+OPEN5GS_REQS_UBUNTU := python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
+OPEN5GS_REQS_ARCH := python-pip python-setuptools python-wheel ninja base-devel flex bison git cmake lksctp-tools libgcrypt openssl libidn mongo-c-driver libyaml libnghttp2 libmicrohttpd curl libnghttp2 talloc meson
 
 # Validate Command
 validate:
@@ -15,13 +19,21 @@ validate:
 	@which go > /dev/null || (echo "Go is not installed. Please install Go and try again" && exit 1)
 	@systemctl is-active --quiet mongodb || (echo "MongoDB is not running. Please start Docker and try again" && exit 1)
 	@which python3 > /dev/null || (echo "Python3 is not installed. Please install Python3 and try again" && exit 1)
+	@echo "System requirements validated"
 	
 
 # Init Command
 init:
 	@echo "Initializing 5G core network"
 	@echo "Installing Open5GS requirements"
-	@which apt > /dev/null && $(OPEN5GS_REQS_UBUNTU_INSTALL)
+	@if [ $(OS) == "ubuntu" ]; then \
+			sudo apt-get update && sudo apt-get install -y $(OPEN5GS_REQS_UBUNTU); \
+		elif [ $(OS) == "arch" ]; then \
+			sudo pacman -Syu --overwrite "*" && sudo pacman -S $(OPEN5GS_REQS_ARCH); \
+		else \
+			echo "Unsupported OS. Please install the requirements manually and try again"; \
+			exit 1; \
+		fi
 	@echo "Cloning submodules"
 	@git submodule update --init --recursive
 	@echo "Building Free5GC N3IWF"
