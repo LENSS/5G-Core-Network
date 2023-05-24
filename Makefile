@@ -11,7 +11,7 @@ SHELL := /bin/bash
 OS := $(shell grep  -oP '^ID=\K\w+' /etc/os-release)
 
 OPEN5GS_REQS_UBUNTU := python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git cmake libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev libnghttp2-dev libmicrohttpd-dev libcurl4-gnutls-dev libnghttp2-dev libtins-dev libtalloc-dev meson
-OPEN5GS_REQS_ARCH := python-pip python-setuptools python-wheel ninja base-devel flex bison git cmake lksctp-tools libgcrypt openssl libidn mongo-c-driver libyaml libnghttp2 libmicrohttpd curl libnghttp2 talloc meson
+OPEN5GS_REQS_ARCH := python-pip python-setuptools python-wheel ninja base-devel flex bison git cmake lksctp-tools libgcrypt openssl libidn mongo-c-driver libyaml libnghttp2 libmicrohttpd curl libnghttp2 talloc meson 
 
 # Install MongoDB
 init-mongodb:
@@ -34,6 +34,8 @@ validate:
 	@which go > /dev/null || (echo "Go is not installed. Please install Go and try again" && exit 1)
 	@systemctl is-active --quiet mongodb || (echo "MongoDB is not running. Please start MongoDB and try again" && exit 1)
 	@which python3 > /dev/null || (echo "Python3 is not installed. Please install Python3 and try again" && exit 1)
+	@which node > /dev/null || (echo "NodeJS is not installed. Please install NodeJS and try again" && exit 1)
+	@which npm > /dev/null || (echo "NPM is not installed. Please install NPM and try again" && exit 1)
 	@echo "System requirements validated"
 	
 
@@ -55,8 +57,6 @@ init:
 	@cd free5gc && make n3iwf
 	@echo "Building Open5GS"
 	@cd open5gs && meson build --prefix=`pwd`/install && ninja -C build
-	@echo "Building Open5GS WebUI"
-	@cd open5gs/webui && npm install && npm run dev
 
 # Start Command
 start:
