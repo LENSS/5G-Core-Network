@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 SCRIPT_DIR=$(dirname $(readlink -f $0))
-CORE_DIR=$SCRIPT_DIR/../
+CORE_DIR=$SCRIPT_DIR/..
 RUN_BG_PROCESS=$SCRIPT_DIR/run-bg-process.sh
 
 # Create virtual IP addresses
