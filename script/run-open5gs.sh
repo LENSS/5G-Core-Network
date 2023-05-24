@@ -1,6 +1,7 @@
 #!/bin/bash 
 
 SCRIPT_DIR=$(dirname $(readlink -f $0))
+CORE_DIR=$SCRIPT_DIR/../
 RUN_BG_PROCESS=$SCRIPT_DIR/run-bg-process.sh
 
 # Create virtual IP addresses
@@ -39,10 +40,10 @@ for nf in "${nfs[@]}"
 do
     if [[ " ${fivegnfs[@]} " =~ " ${nf} " ]]; then
         echo "Starting Open5GS 5G $nf..."
-        $RUN_BG_PROCESS -n ${nf} --c /home/mbroner/open5gs/install/bin/open5gs-${nf}d -c /home/mbroner/open5gs/install/etc/open5gs/${nf}.yaml
+        $RUN_BG_PROCESS -n ${nf} --c $CORE_DIR/open5gs/install/bin/open5gs-${nf}d -c /home/mbroner/open5gs/install/etc/open5gs/${nf}.yaml
     else
         echo "Starting Open5GS 4G $nf..."
-        $RUN_BG_PROCESS -n ${nf} --c /home/mbroner/open5gs/install/bin/open5gs-${nf}d -c /home/mbroner/open5gs/install/etc/open5gs/${nf}.yaml
+        $RUN_BG_PROCESS -n ${nf} --c $CORE_DIR/open5gs/install/bin/open5gs-${nf}d -c /home/mbroner/open5gs/install/etc/open5gs/${nf}.yaml
     fi
 done
 
@@ -50,7 +51,7 @@ done
 cd /home/mbroner/free5gc
 # Remove existing xfrmi-default interface (if any)
 sudo ip link del xfrmi-default || true
-$RUN_BG_PROCESS -n n3iwf --c ./bin/n3iwf -c ./config/n3iwfcfg.yaml
+$RUN_BG_PROCESS -n n3iwf --c $CORE_DIR/free5gc/bin/n3iwf -c $CORE_DIR/free5gc/config/n3iwfcfg.yaml
 
 # Get status of Open5GS 5G NFs
 $RUN_BG_PROCESS
