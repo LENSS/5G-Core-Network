@@ -5,10 +5,10 @@ CORE_DIR=$SCRIPT_DIR/..
 RUN_BG_PROCESS=$SCRIPT_DIR/run-bg-process.sh
 
 # Create virtual IP addresses
-sudo ip addr add 192.168.2.170/24 br 192.168.2.255 dev enp0s8 || true # for UPF
-sudo ip addr add 192.168.2.179/24 br 192.168.2.255 dev enp0s8 || true # for UPF
-sudo ip addr add 192.168.2.171/24 br 192.168.2.255 dev enp0s8 || true # for UE
-sudo ip add show dev enp0s8 || true
+sudo ip addr add 192.168.2.170/24 br 192.168.2.255 dev ens160 || true # for UPF
+sudo ip addr add 192.168.2.179/24 br 192.168.2.255 dev ens160 || true # for UPF
+sudo ip addr add 192.168.2.171/24 br 192.168.2.255 dev ens160 || true # for UE
+sudo ip add show dev ens160 || true
 
 # IPSec tunnel configuration
 # Delete existing tunnel (if any)
@@ -19,7 +19,7 @@ sudo ip link del ipsec0 || true
 
 # Configure routing
 sudo sysctl -w net.ipv4.ip_forward=1 || true
-sudo iptables -t nat -A POSTROUTING -o enp0s8 -j MASQUERADE || true
+sudo iptables -t nat -A POSTROUTING -o ens160 -j MASQUERADE || true
 sudo systemctl stop ufw || true
 
 # OGS Tun interface configuration
@@ -27,6 +27,8 @@ sudo ip tuntap add name ogstun mode tun || true
 sudo ip addr add 10.45.0.1/16 dev ogstun || true
 sudo ip link set ogstun up
 sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
+sudo iptables -P FORWARD ACCEPT
+sudo iptables -I INPUT --sourc 10.45.0.0/16 -j ACCEPT
 
 
 $RUN_BG_PROCESS -k # Kill any existing background processes
@@ -40,18 +42,18 @@ for nf in "${nfs[@]}"
 do
     if [[ " ${fivegnfs[@]} " =~ " ${nf} " ]]; then
         echo "Starting Open5GS 5G $nf..."
-        $RUN_BG_PROCESS -n ${nf} --c $CORE_DIR/open5gs/install/bin/open5gs-${nf}d -c /home/mbroner/open5gs/install/etc/open5gs/${nf}.yaml
+        $RUN_BG_PROCESS -n ${nf} --c $CORE_DIR/open5gs/install/bin/open5gs-${nf}d -c $CORE_DIR/open5gs/install/etc/open5gs/${nf}.yaml
     else
         echo "Starting Open5GS 4G $nf..."
-        $RUN_BG_PROCESS -n ${nf} --c $CORE_DIR/open5gs/install/bin/open5gs-${nf}d -c /home/mbroner/open5gs/install/etc/open5gs/${nf}.yaml
+        $RUN_BG_PROCESS -n ${nf} --c $CORE_DIR/open5gs/install/bin/open5gs-${nf}d -c $CORE_DIR/open5gs/install/etc/open5gs/${nf}.yaml
     fi
 done
 
 # Run N3IWF
-cd /home/mbroner/free5gc
 # Remove existing xfrmi-default interface (if any)
 sudo ip link del xfrmi-default || true
-$RUN_BG_PROCESS -n n3iwf --c $CORE_DIR/free5gc/bin/n3iwf -c $CORE_DIR/free5gc/config/n3iwfcfg.yaml
+cd $CORE_DIR/free5gc
+sudo $RUN_BG_PROCESS -n n3iwf --c ./bin/n3iwf -c ./config/n3iwfcfg.yaml
 
 # Get status of Open5GS 5G NFs
 $RUN_BG_PROCESS

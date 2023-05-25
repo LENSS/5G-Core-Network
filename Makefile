@@ -34,8 +34,7 @@ validate:
 	@which go > /dev/null || (echo "Go is not installed. Please install Go and try again" && exit 1)
 	@systemctl is-active --quiet mongodb || (echo "MongoDB is not running. Please start MongoDB and try again" && exit 1)
 	@which python3 > /dev/null || (echo "Python3 is not installed. Please install Python3 and try again" && exit 1)
-	@which node > /dev/null || (echo "NodeJS is not installed. Please install NodeJS and try again" && exit 1)
-	@which npm > /dev/null || (echo "NPM is not installed. Please install NPM and try again" && exit 1)
+	@which node > /dev/null || (echo "NodeJS is not installed. Please install NodeJS (preferrably with NVM) and try again" && exit 1)
 	@echo "System requirements validated"
 	
 
@@ -54,9 +53,10 @@ init:
 	@echo "Cloning submodules"
 	@git submodule update --init --recursive
 	@echo "Building Free5GC N3IWF"
-	@cd free5gc && make n3iwf
+	@cd free5gc && cd NFs/n3iwf && git pull origin main && cd .. && make n3iwf
 	@echo "Building Open5GS"
-	@cd open5gs && meson build --prefix=`pwd`/install && ninja -C build
+	@cd open5gs && git pull origin main && git checkout free5gc-n3iwf-cc && git pull origin free5gc-n3iwf-cc && meson build --prefix=`pwd`/install && ninja -C build && cd build && ninja install
+	@cd open5gs && cp configs/stable-configs/* install/etc/open5gs/
 
 # Start Command
 start:
