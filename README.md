@@ -47,3 +47,6 @@ To see the logs of a given running process by name, run:
 ``` 
 run-bg-process.sh -l -n [PROCESS_NAME]
 ```
+
+## Adding Devices
+Before using the core network, you will need to add registered devices. See the instructions [here](https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/) for using the Open5GS web UI to easily add users, or access the MongoDB instance directly (not recommended).
